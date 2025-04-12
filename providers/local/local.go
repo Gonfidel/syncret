@@ -3,6 +3,7 @@ package local
 import (
 	"database/sql"
 	"fmt"
+
 	_ "modernc.org/sqlite"
 )
 
@@ -83,7 +84,7 @@ func (p *LocalProvider) OpenDatabaseConnection() error {
 
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
-		return fmt.Errorf("Error opening sqlite connection %s: %w", path, err)
+		return fmt.Errorf("error opening sqlite connection %s: %w", path, err)
 	}
 	p.db = db
 	return nil
@@ -109,7 +110,7 @@ func (p *LocalProvider) Setup() error {
 		value VARCHAR(64) NOT NULL
 	)`)
 	if err != nil {
-		return fmt.Errorf("Error creating secrets table: %w", err)
+		return fmt.Errorf("error creating secrets table: %w", err)
 	}
 	return nil
 }

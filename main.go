@@ -5,7 +5,7 @@ import (
 
 	aws "github.com/gonfidel/syncret/providers/aws"
 	local "github.com/gonfidel/syncret/providers/local"
-	// secret "github.com/gonfidel/syncret/secret"
+	// secret "github.com/gonfidel/syncret/secret".
 )
 
 func main() {

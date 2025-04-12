@@ -29,7 +29,7 @@ func (p *AwsProvider) Get(key string) (string, error) {
 		SecretId: aws.String(key),
 	})
 	if err != nil {
-		return "", fmt.Errorf("Failed to get secret value with key \"%s\": %w", key, err)
+		return "", fmt.Errorf("failed to get secret value with key \"%s\": %w", key, err)
 	}
 
 	if resp.SecretString != nil {
@@ -38,7 +38,7 @@ func (p *AwsProvider) Get(key string) (string, error) {
 		decoded := base64.StdEncoding.EncodeToString(resp.SecretBinary)
 		return decoded, nil
 	} else {
-		return "", fmt.Errorf("Unknown secret format")
+		return "", errors.New("Unknown secret format")
 	}
 }
 
