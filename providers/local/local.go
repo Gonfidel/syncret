@@ -102,12 +102,15 @@ func (p *Provider) encrypt(plaintext string) (string, error) {
 	}
 
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
-	iv := ciphertext[:aes.BlockSize]
+
+	iv := make([]byte, aes.BlockSize)
 	if _, err = io.ReadFull(rand.Reader, iv); err != nil {
 		return "", fmt.Errorf("failed to generate IV: %w", err)
 	}
 
-	stream := cipher.NewCFBEncrypter(block, iv)
+	copy(ciphertext[:aes.BlockSize], iv)
+
+	stream := cipher.NewCFBEncrypter(block, iv) // #nosec G407 -- IV is randomized above
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(plaintext))
 
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
