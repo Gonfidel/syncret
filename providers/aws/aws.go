@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/gonfidel/syncret/secrets"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
@@ -21,7 +23,7 @@ type Provider struct {
 	smClient       *secretsmanager.Client
 }
 
-func NewProvider(c Config) (*Provider, error) {
+func NewProvider(c Config) (secrets.Store, error) {
 	p := &Provider{ProviderConfig: c}
 	if err := p.Init(); err != nil {
 		return nil, err

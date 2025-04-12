@@ -4,7 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gonfidel/syncret/internal/providers/local"
+	"github.com/gonfidel/syncret/providers/local"
+	"github.com/gonfidel/syncret/secrets"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 	invalidEncryptionKey = "1234"                             // invalid
 )
 
-func setupProvider(t *testing.T, key string) *local.Provider {
+func setupProvider(t *testing.T, key string) secrets.Store {
 	t.Helper()
 
 	tmpDir := t.TempDir()
@@ -26,7 +27,7 @@ func setupProvider(t *testing.T, key string) *local.Provider {
 	}
 
 	t.Cleanup(func() {
-		if err = provider.CloseDatabaseConnection(); err != nil {
+		if err = provider.Shutdown(); err != nil {
 			t.Errorf("failed closing local provider sqlite connection")
 		}
 	})

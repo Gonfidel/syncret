@@ -3,10 +3,11 @@ package mock_test
 import (
 	"testing"
 
-	"github.com/gonfidel/syncret/internal/providers/mock"
+	"github.com/gonfidel/syncret/providers/mock"
+	"github.com/gonfidel/syncret/secrets"
 )
 
-func setupProvider(t *testing.T) *mock.Provider {
+func setupProvider(t *testing.T) secrets.Store {
 	t.Helper()
 
 	provider, err := mock.NewProvider(mock.Config{})

@@ -12,6 +12,8 @@ import (
 	"runtime"
 
 	_ "modernc.org/sqlite" // Driver necessary but never directly called
+
+	"github.com/gonfidel/syncret/secrets"
 )
 
 type Config struct {
@@ -25,7 +27,7 @@ type Provider struct {
 	encryptionByteArray []byte
 }
 
-func NewProvider(c Config) (*Provider, error) {
+func NewProvider(c Config) (secrets.Store, error) {
 	p := &Provider{ProviderConfig: c}
 	if err := p.Init(); err != nil {
 		return nil, err
@@ -165,10 +167,15 @@ func (p *Provider) encrypt(plaintext string) (string, error) {
 	}
 
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
-	if _, err = io.ReadFull(rand.Reader, ciphertext[:aes.BlockSize]); err != nil {
+
+	iv := make([]byte, aes.BlockSize)
+	if _, err = io.ReadFull(rand.Reader, iv); err != nil {
 		return "", fmt.Errorf("failed to generate IV: %w", err)
 	}
-	stream := cipher.NewCFBEncrypter(block, ciphertext[:aes.BlockSize])
+
+	copy(ciphertext[:aes.BlockSize], iv)
+
+	stream := cipher.NewCFBEncrypter(block, iv) // #nosec G407 -- IV is randomized above
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(plaintext))
 
 	return base64.StdEncoding.EncodeToString(ciphertext), nil

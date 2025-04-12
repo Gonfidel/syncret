@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
+
+	"github.com/gonfidel/syncret/secrets"
 )
 
 type Config struct{}
@@ -14,7 +16,7 @@ type Provider struct {
 	ProviderConfig Config
 }
 
-func NewProvider(c Config) (*Provider, error) {
+func NewProvider(c Config) (secrets.Store, error) {
 	p := &Provider{
 		ProviderConfig: c,
 		secrets:        make(map[string]string),

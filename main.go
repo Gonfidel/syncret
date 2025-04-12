@@ -1,17 +1,13 @@
-# Secret Provider Interface
-
-This repository defines a `Provider` interface for managing secrets. It is designed to be implemented by various secret management backends such as AWS Secrets Manager, or SQLite.
-
-```go
 package main
 
 import (
 	"fmt"
 	"log"
-	"github.com/gonfidel/syncret/secret"
+
+	"github.com/gonfidel/syncret/providers/local"
 )
 
-func main() {
+func main(){
 	// Setup the provider
 	provider, err := local.NewProvider(local.Config{
 		SqlitePath: "123",
@@ -62,4 +58,3 @@ func main() {
 		fmt.Printf("Successfully shutdown provider")
 	}
 }
-```
