@@ -34,7 +34,7 @@ func setupProvider(t *testing.T, key string) *local.Provider {
 	return provider
 }
 
-func TestProvider_SetGetDestroy(t *testing.T) {
+func TestLocalProvider_SetGetDestroy(t *testing.T) {
 	provider := setupProvider(t, validEncryptionKey)
 
 	const key = "TestKey"
@@ -86,7 +86,7 @@ func TestProvider_SetGetDestroy(t *testing.T) {
 	})
 }
 
-func TestProvider_InvalidEncryptionKey(t *testing.T) {
+func TestLocalProvider_InvalidEncryptionKey(t *testing.T) {
 	tmpDir := t.TempDir()
 	dbPath := filepath.Join(tmpDir, "test.db")
 

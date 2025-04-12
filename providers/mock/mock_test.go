@@ -17,7 +17,7 @@ func setupProvider(t *testing.T) *mock.Provider {
 	return provider
 }
 
-func TestProvider_SetGetDestroy(t *testing.T) {
+func TestMockProvider_SetGetDestroy(t *testing.T) {
 	provider := setupProvider(t)
 
 	const key = "foo/bar"
