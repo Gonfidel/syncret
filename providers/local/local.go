@@ -2,15 +2,17 @@ package local
 
 import (
 	"fmt"
-	"log"
 	"database/sql"
 	_ "modernc.org/sqlite"
 )
 
-type Config struct {}
+type Config struct {
+	// TODO (ngeorge): Add options for provider configuration
+	SqlitePath string
+}
 
 type LocalProvider struct {
-	Config Config
+	ProviderConfig Config
 	db *sql.DB
 }
 
@@ -20,11 +22,26 @@ func (p *LocalProvider) Get(key string) (string, error) {
 	err := row.Scan(&value)
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to get secret with key \"%s\" %w", key, err)
 	}
 
-	fmt.Println("Secret fetched successfully!")
 	return value, nil
+}
+
+func (p *LocalProvider) Exists(key string) (exists bool, e error) {
+	var value string
+	row := p.db.QueryRow(`SELECT id FROM secrets WHERE key = ?;`, key)
+	err := row.Scan(&value)
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, fmt.Errorf("error checking if secret exists with key \"%s\": %w", key, err)
+	}
+
+	return true, nil
 }
 
 func (p *LocalProvider) Set(key, value string) error {
@@ -37,7 +54,6 @@ func (p *LocalProvider) Set(key, value string) error {
 		return err
 	}
 
-	fmt.Println("Secret added successfully!")
 	return nil
 }
 
@@ -56,14 +72,22 @@ func (p LocalProvider) Destroy(key string) error {
 		return fmt.Errorf("no record found for key: %s", key)
 	}
 
-	fmt.Println("Secret destroyed successfully!")
 	return nil
 }
 
-func (p *LocalProvider) Setup() {
-	db, err := sql.Open("sqlite", "tmp/example.db")
+func (p LocalProvider) CloseDatabaseConnection() {
+	p.db.Close()
+}
+
+func (p *LocalProvider) Setup() error {
+	path := p.ProviderConfig.SqlitePath
+	if path == "" {
+		path = "tmp/example.db"
+	}
+
+	db, err := sql.Open("sqlite", path)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("Error writing to file %s: %w", path, err)
 	}
 	p.db = db
 
@@ -73,14 +97,18 @@ func (p *LocalProvider) Setup() {
 		value VARCHAR(64) NOT NULL
 	)`)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("Error creating secrets table: %w", err)
 	}
+	return nil
 }
 
-func NewProvider(c Config) *LocalProvider {
-	p := LocalProvider{
-		Config: c,
+func NewProvider(c Config) (*LocalProvider, error) {
+	p := &LocalProvider{
+		ProviderConfig: c,
 	}
-	p.Setup()
-	return &p
+	err := p.Setup()
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
 }

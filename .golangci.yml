@@ -1,0 +1,21 @@
+run:
+  timeout: 2m
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - deadcode
+    - gofmt
+    - gosimple
+    - structcheck
+    - ineffassign
+    - typecheck
+
+issues:
+  exclude-use-default: false
+
+output:
+  format: colored-line-number
