@@ -13,7 +13,10 @@ import (
 
 func main() {
 	// Setup the provider
-	provider, err := local.NewProvider(local.Config{})
+	provider, err := local.NewProvider(local.Config{
+		SqlitePath:    "datastore",
+		EncryptionKey: "12345678901234567890123456789012",
+	})
 	if err != nil {
 		log.Fatalf("Error setting up provider: %v", err)
 	}
