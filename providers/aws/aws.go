@@ -18,13 +18,13 @@ type Config struct {
 	// AwsSecretAccessKey string
 }
 
-type AwsProvider struct {
+type Provider struct {
 	ProviderConfig Config
 	awsConfig      config.Config
 	smClient       *secretsmanager.Client
 }
 
-func (p *AwsProvider) Get(key string) (string, error) {
+func (p *Provider) Get(key string) (string, error) {
 	resp, err := p.smClient.GetSecretValue(context.Background(), &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(key),
 	})
@@ -34,15 +34,15 @@ func (p *AwsProvider) Get(key string) (string, error) {
 
 	if resp.SecretString != nil {
 		return *resp.SecretString, nil
-	} else if resp.SecretBinary != nil {
+	}
+	if resp.SecretBinary != nil {
 		decoded := base64.StdEncoding.EncodeToString(resp.SecretBinary)
 		return decoded, nil
-	} else {
-		return "", errors.New("Unknown secret format")
 	}
+	return "", errors.New("unknown secret format")
 }
 
-func (p *AwsProvider) Exists(key string) (exists bool, e error) {
+func (p *Provider) Exists(key string) (bool, error) {
 	_, err := p.smClient.DescribeSecret(context.Background(), &secretsmanager.DescribeSecretInput{
 		SecretId: aws.String(key),
 	})
@@ -59,13 +59,13 @@ func (p *AwsProvider) Exists(key string) (exists bool, e error) {
 	return true, nil
 }
 
-func (p *AwsProvider) Set(key, value string) error {
+func (p *Provider) Set(key, value string) error {
 	exists, err := p.Exists(key)
 	if err != nil {
 		return err
 	}
 	if exists {
-		_, err := p.smClient.UpdateSecret(context.Background(), &secretsmanager.UpdateSecretInput{
+		_, err = p.smClient.UpdateSecret(context.Background(), &secretsmanager.UpdateSecretInput{
 			SecretId:     aws.String(key),
 			SecretString: aws.String(value),
 		})
@@ -73,7 +73,7 @@ func (p *AwsProvider) Set(key, value string) error {
 			return fmt.Errorf("unable to set secrets %s: %w", key, err)
 		}
 	} else {
-		_, err := p.smClient.CreateSecret(context.Background(), &secretsmanager.CreateSecretInput{
+		_, err = p.smClient.CreateSecret(context.Background(), &secretsmanager.CreateSecretInput{
 			Name:         aws.String(key),
 			SecretString: aws.String(value),
 		})
@@ -85,14 +85,14 @@ func (p *AwsProvider) Set(key, value string) error {
 	return nil
 }
 
-func (p *AwsProvider) Destroy(key string) error {
+func (p *Provider) Destroy(key string) error {
 	exists, err := p.Exists(key)
 	if err != nil {
 		return err
 	}
 
 	if exists {
-		_, err := p.smClient.DeleteSecret(context.Background(), &secretsmanager.DeleteSecretInput{
+		_, err = p.smClient.DeleteSecret(context.Background(), &secretsmanager.DeleteSecretInput{
 			ForceDeleteWithoutRecovery: aws.Bool(true),
 			SecretId:                   aws.String(key),
 		})
@@ -103,7 +103,7 @@ func (p *AwsProvider) Destroy(key string) error {
 	return nil
 }
 
-func (p *AwsProvider) Setup() error {
+func (p *Provider) Setup() error {
 	awsConfig, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return err
@@ -114,8 +114,8 @@ func (p *AwsProvider) Setup() error {
 	return nil
 }
 
-func NewProvider(c Config) (*AwsProvider, error) {
-	p := &AwsProvider{
+func NewProvider(c Config) (*Provider, error) {
+	p := &Provider{
 		ProviderConfig: c,
 	}
 	err := p.Setup()

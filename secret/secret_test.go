@@ -12,12 +12,12 @@ func TestSecretManager_SetGetDestroy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to generate new provider: %v", err)
 	}
-	manager := secret.NewSecretManager(mockProvider)
+	manager := secret.NewManager(mockProvider)
 
 	key := "foo/bar"
 	value := "s3cr3t"
 
-	if err := manager.Set(key, value); err != nil {
+	if err = manager.Set(key, value); err != nil {
 		t.Fatalf("failed to set secret: %v", err)
 	}
 
@@ -37,7 +37,7 @@ func TestSecretManager_SetGetDestroy(t *testing.T) {
 		t.Error("expected secret to exist")
 	}
 
-	if err := manager.Destroy(key); err != nil {
+	if err = manager.Destroy(key); err != nil {
 		t.Fatalf("failed to destroy secret: %v", err)
 	}
 

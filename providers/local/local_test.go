@@ -20,7 +20,7 @@ func TestLocalProvider_SetGetDestroy(t *testing.T) {
 	key := "TestKey"
 	value := "HelloWorld!"
 
-	if err := provider.Set(key, value); err != nil {
+	if err = provider.Set(key, value); err != nil {
 		t.Fatalf("failed to set secret: %v", err)
 	}
 
@@ -32,7 +32,7 @@ func TestLocalProvider_SetGetDestroy(t *testing.T) {
 		t.Errorf("expected %q, got %q", value, got)
 	}
 
-	if err := provider.Destroy(key); err != nil {
+	if err = provider.Destroy(key); err != nil {
 		t.Fatalf("failed to destroy secret: %v", err)
 	}
 
@@ -50,7 +50,7 @@ func TestLocalProvider_SetGetDestroy(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		err := provider.CloseDatabaseConnection()
+		err = provider.CloseDatabaseConnection()
 		if err != nil {
 			t.Errorf("failed closing local provider sqlite connection")
 		}

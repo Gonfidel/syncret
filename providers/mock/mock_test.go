@@ -15,7 +15,7 @@ func TestMockProvider_SetGetDestroy(t *testing.T) {
 	key := "foo/bar"
 	value := "s3cr3t"
 
-	if err := mockProvider.Set(key, value); err != nil {
+	if err = mockProvider.Set(key, value); err != nil {
 		t.Fatalf("failed to set secret: %v", err)
 	}
 
@@ -35,7 +35,7 @@ func TestMockProvider_SetGetDestroy(t *testing.T) {
 		t.Error("expected secret to exist")
 	}
 
-	if err := mockProvider.Destroy(key); err != nil {
+	if err = mockProvider.Destroy(key); err != nil {
 		t.Fatalf("failed to destroy secret: %v", err)
 	}
 

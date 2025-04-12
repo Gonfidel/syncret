@@ -7,14 +7,16 @@ import (
 
 type Config struct{}
 
-type MockProvider struct {
+type Provider struct {
 	secrets map[string]string
 	mu      sync.RWMutex
+	config  Config
 }
 
-func NewProvider(c Config) (*MockProvider, error) {
-	p := MockProvider{
+func NewProvider(c Config) (*Provider, error) {
+	p := Provider{
 		secrets: make(map[string]string),
+		config:  c,
 	}
 	err := p.Setup()
 	if err != nil {
@@ -24,18 +26,18 @@ func NewProvider(c Config) (*MockProvider, error) {
 	return &p, nil
 }
 
-func (m *MockProvider) Setup() error {
+func (m *Provider) Setup() error {
 	return nil
 }
 
-func (m *MockProvider) Set(key, value string) error {
+func (m *Provider) Set(key, value string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.secrets[key] = value
 	return nil
 }
 
-func (m *MockProvider) Get(key string) (string, error) {
+func (m *Provider) Get(key string) (string, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	value, ok := m.secrets[key]
@@ -45,7 +47,7 @@ func (m *MockProvider) Get(key string) (string, error) {
 	return value, nil
 }
 
-func (m *MockProvider) Destroy(key string) error {
+func (m *Provider) Destroy(key string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if _, ok := m.secrets[key]; !ok {
@@ -55,7 +57,7 @@ func (m *MockProvider) Destroy(key string) error {
 	return nil
 }
 
-func (m *MockProvider) Exists(key string) (bool, error) {
+func (m *Provider) Exists(key string) (bool, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	_, ok := m.secrets[key]

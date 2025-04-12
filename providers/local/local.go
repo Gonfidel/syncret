@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "modernc.org/sqlite"
+	_ "modernc.org/sqlite" // Driver necessary but never directly called
 )
 
 type Config struct {
@@ -12,12 +12,12 @@ type Config struct {
 	SqlitePath string
 }
 
-type LocalProvider struct {
+type Provider struct {
 	ProviderConfig Config
 	db             *sql.DB
 }
 
-func (p *LocalProvider) Get(key string) (string, error) {
+func (p *Provider) Get(key string) (string, error) {
 	var value string
 	row := p.db.QueryRow(`SELECT value FROM secrets WHERE key = ?;`, key)
 	err := row.Scan(&value)
@@ -29,7 +29,7 @@ func (p *LocalProvider) Get(key string) (string, error) {
 	return value, nil
 }
 
-func (p *LocalProvider) Exists(key string) (exists bool, e error) {
+func (p *Provider) Exists(key string) (bool, error) {
 	var value string
 	row := p.db.QueryRow(`SELECT id FROM secrets WHERE key = ?;`, key)
 	err := row.Scan(&value)
@@ -45,7 +45,7 @@ func (p *LocalProvider) Exists(key string) (exists bool, e error) {
 	return true, nil
 }
 
-func (p *LocalProvider) Set(key, value string) error {
+func (p *Provider) Set(key, value string) error {
 	_, err := p.db.Exec(`
 		INSERT INTO secrets (key, value)
 		VALUES (?, ?)
@@ -58,7 +58,7 @@ func (p *LocalProvider) Set(key, value string) error {
 	return nil
 }
 
-func (p *LocalProvider) Destroy(key string) error {
+func (p *Provider) Destroy(key string) error {
 	result, err := p.db.Exec(`DELETE FROM secrets WHERE key = ?;`, key)
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (p *LocalProvider) Destroy(key string) error {
 	return nil
 }
 
-func (p *LocalProvider) OpenDatabaseConnection() error {
+func (p *Provider) OpenDatabaseConnection() error {
 	path := p.ProviderConfig.SqlitePath
 	if path == "" {
 		path = "tmp/example.db"
@@ -90,7 +90,7 @@ func (p *LocalProvider) OpenDatabaseConnection() error {
 	return nil
 }
 
-func (p *LocalProvider) CloseDatabaseConnection() error {
+func (p *Provider) CloseDatabaseConnection() error {
 	err := p.db.Close()
 	if err != nil {
 		return fmt.Errorf("error closing sqlite connection %w", err)
@@ -98,7 +98,7 @@ func (p *LocalProvider) CloseDatabaseConnection() error {
 	return nil
 }
 
-func (p *LocalProvider) Setup() error {
+func (p *Provider) Setup() error {
 	err := p.OpenDatabaseConnection()
 	if err != nil {
 		return err
@@ -115,8 +115,8 @@ func (p *LocalProvider) Setup() error {
 	return nil
 }
 
-func NewProvider(c Config) (*LocalProvider, error) {
-	p := &LocalProvider{
+func NewProvider(c Config) (*Provider, error) {
+	p := &Provider{
 		ProviderConfig: c,
 	}
 	err := p.Setup()

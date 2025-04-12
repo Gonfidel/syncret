@@ -10,26 +10,26 @@ import (
 // 	Value string
 // }
 
-type SecretManager struct {
+type Manager struct {
 	provider p.Provider
 }
 
-func NewSecretManager(provider p.Provider) *SecretManager {
-	return &SecretManager{provider}
+func NewManager(provider p.Provider) *Manager {
+	return &Manager{provider}
 }
 
-func (sm *SecretManager) Get(key string) (string, error) {
+func (sm *Manager) Get(key string) (string, error) {
 	return sm.provider.Get(key)
 }
 
-func (sm *SecretManager) Set(key, value string) error {
+func (sm *Manager) Set(key, value string) error {
 	return sm.provider.Set(key, value)
 }
 
-func (sm *SecretManager) Destroy(key string) error {
+func (sm *Manager) Destroy(key string) error {
 	return sm.provider.Destroy(key)
 }
 
-func (sm *SecretManager) Exists(key string) (bool, error) {
+func (sm *Manager) Exists(key string) (bool, error) {
 	return sm.provider.Exists(key)
 }
