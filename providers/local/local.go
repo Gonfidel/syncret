@@ -12,6 +12,8 @@ import (
 	"runtime"
 
 	_ "modernc.org/sqlite" // Driver necessary but never directly called
+
+	"github.com/gonfidel/syncret/secrets"
 )
 
 type Config struct {
@@ -23,6 +25,47 @@ type Provider struct {
 	ProviderConfig      Config
 	db                  *sql.DB
 	encryptionByteArray []byte
+}
+
+func NewProvider(c Config) (secrets.Store, error) {
+	p := &Provider{ProviderConfig: c}
+	if err := p.Init(); err != nil {
+		return nil, err
+	}
+
+	runtime.SetFinalizer(p, func(p *Provider) {
+		_ = p.Shutdown()
+	})
+
+	return p, nil
+}
+
+func (p *Provider) Init() error {
+	err := p.validateEncryptionKey()
+	if err != nil {
+		return err
+	}
+
+	err = p.OpenDatabaseConnection()
+	if err != nil {
+		return err
+	}
+
+	_, err = p.db.Exec(`CREATE TABLE IF NOT EXISTS secrets (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		key VARCHAR(64) UNIQUE NOT NULL,
+		value VARCHAR(64) NOT NULL
+	)`)
+	if err != nil {
+		return fmt.Errorf("error creating secrets table: %w", err)
+	}
+
+	return nil
+}
+
+func (p *Provider) Shutdown() error {
+	err := p.CloseDatabaseConnection()
+	return err
 }
 
 func (p *Provider) Get(key string) (string, error) {
@@ -95,6 +138,28 @@ func (p *Provider) Destroy(key string) error {
 	return nil
 }
 
+func (p *Provider) OpenDatabaseConnection() error {
+	path := p.ProviderConfig.SqlitePath
+	if path == "" {
+		path = "tmp/example.db"
+	}
+
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		return fmt.Errorf("error opening sqlite connection %s: %w", path, err)
+	}
+	p.db = db
+	return nil
+}
+
+func (p *Provider) CloseDatabaseConnection() error {
+	err := p.db.Close()
+	if err != nil {
+		return fmt.Errorf("error closing sqlite connection %w", err)
+	}
+	return nil
+}
+
 func (p *Provider) encrypt(plaintext string) (string, error) {
 	block, err := aes.NewCipher(p.encryptionByteArray)
 	if err != nil {
@@ -139,28 +204,6 @@ func (p *Provider) decrypt(ciphertext string) (string, error) {
 	return string(ciphertextBytes), nil
 }
 
-func (p *Provider) OpenDatabaseConnection() error {
-	path := p.ProviderConfig.SqlitePath
-	if path == "" {
-		path = "tmp/example.db"
-	}
-
-	db, err := sql.Open("sqlite", path)
-	if err != nil {
-		return fmt.Errorf("error opening sqlite connection %s: %w", path, err)
-	}
-	p.db = db
-	return nil
-}
-
-func (p *Provider) CloseDatabaseConnection() error {
-	err := p.db.Close()
-	if err != nil {
-		return fmt.Errorf("error closing sqlite connection %w", err)
-	}
-	return nil
-}
-
 func (p *Provider) validateEncryptionKey() error {
 	keyLen := len(p.ProviderConfig.EncryptionKey)
 	if keyLen != 16 && keyLen != 24 && keyLen != 32 {
@@ -168,43 +211,4 @@ func (p *Provider) validateEncryptionKey() error {
 	}
 	p.encryptionByteArray = []byte(p.ProviderConfig.EncryptionKey)
 	return nil
-}
-
-func (p *Provider) Setup() error {
-	err := p.validateEncryptionKey()
-	if err != nil {
-		return err
-	}
-
-	err = p.OpenDatabaseConnection()
-	if err != nil {
-		return err
-	}
-
-	_, err = p.db.Exec(`CREATE TABLE IF NOT EXISTS secrets (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		key VARCHAR(64) UNIQUE NOT NULL,
-		value VARCHAR(64) NOT NULL
-	)`)
-	if err != nil {
-		return fmt.Errorf("error creating secrets table: %w", err)
-	}
-
-	return nil
-}
-
-func NewProvider(c Config) (*Provider, error) {
-	p := &Provider{
-		ProviderConfig: c,
-	}
-	err := p.Setup()
-	if err != nil {
-		return nil, err
-	}
-
-	runtime.SetFinalizer(p, func(p *Provider) {
-		_ = p.CloseDatabaseConnection()
-	})
-
-	return p, nil
 }

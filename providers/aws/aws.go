@@ -5,6 +5,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"runtime"
+
+	"github.com/gonfidel/syncret/secrets"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -18,6 +21,34 @@ type Provider struct {
 	ProviderConfig Config
 	awsConfig      config.Config
 	smClient       *secretsmanager.Client
+}
+
+func NewProvider(c Config) (secrets.Store, error) {
+	p := &Provider{ProviderConfig: c}
+	if err := p.Init(); err != nil {
+		return nil, err
+	}
+
+	runtime.SetFinalizer(p, func(p *Provider) {
+		_ = p.Shutdown()
+	})
+
+	return p, nil
+}
+
+func (p *Provider) Init() error {
+	awsConfig, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		return err
+	}
+	awsSecretsManager := secretsmanager.NewFromConfig(awsConfig)
+	p.awsConfig = awsConfig
+	p.smClient = awsSecretsManager
+	return nil
+}
+
+func (p *Provider) Shutdown() error {
+	return nil
 }
 
 func (p *Provider) Get(key string) (string, error) {
@@ -97,26 +128,4 @@ func (p *Provider) Destroy(key string) error {
 		}
 	}
 	return nil
-}
-
-func (p *Provider) Setup() error {
-	awsConfig, err := config.LoadDefaultConfig(context.Background())
-	if err != nil {
-		return err
-	}
-	awsSecretsManager := secretsmanager.NewFromConfig(awsConfig)
-	p.awsConfig = awsConfig
-	p.smClient = awsSecretsManager
-	return nil
-}
-
-func NewProvider(c Config) (*Provider, error) {
-	p := &Provider{
-		ProviderConfig: c,
-	}
-	err := p.Setup()
-	if err != nil {
-		return nil, err
-	}
-	return p, nil
 }

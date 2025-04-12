@@ -8,14 +8,14 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/gonfidel/syncret/providers/local"
+	"github.com/gonfidel/syncret/secret"
 )
 
 func main() {
 	// Setup the provider
 	provider, err := local.NewProvider(local.Config{
-		SqlitePath:    "datastore",
-		EncryptionKey: "12345678901234567890123456789012",
+		SqlitePath: "123",
+		EncryptionKey: "1234123412341234",
 	})
 	if err != nil {
 		log.Fatalf("Error setting up provider: %v", err)
@@ -53,5 +53,13 @@ func main() {
 		log.Fatalf("Error checking if secret exists: %v", err)
 	}
 	fmt.Printf("Secret exists after destruction: %v\n", exists)
+
+	// Shutdown provider
+	err = provider.Shutdown()
+	if err != nil {
+		log.Fatalf("Error checking if secret exists: %v", err)
+	} else {
+		fmt.Printf("Successfully shutdown provider")
+	}
 }
 ```
