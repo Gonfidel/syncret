@@ -46,4 +46,4 @@ jobs:
 
       - name: Publish Go module
         run: |
-          GOPROXY=proxy.golang.org go list -m github.com/gonfidel/syncret@${{ github.ref }}
+          GOPROXY=proxy.golang.org go list -m github.com/gonfidel/syncret@${{ github.ref_name }}
