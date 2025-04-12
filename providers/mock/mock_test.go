@@ -6,41 +6,65 @@ import (
 	"github.com/gonfidel/syncret/providers/mock"
 )
 
-func TestMockProvider_SetGetDestroy(t *testing.T) {
-	mockProvider, err := mock.NewProvider(mock.Config{})
+func setupProvider(t *testing.T) *mock.Provider {
+	t.Helper()
+
+	provider, err := mock.NewProvider(mock.Config{})
 	if err != nil {
-		t.Fatalf("failed to generate new provider: %v", err)
+		t.Fatalf("failed to create mock provider: %v", err)
 	}
 
-	key := "foo/bar"
-	value := "s3cr3t"
+	return provider
+}
 
-	if err = mockProvider.Set(key, value); err != nil {
-		t.Fatalf("failed to set secret: %v", err)
-	}
+func TestProvider_SetGetDestroy(t *testing.T) {
+	provider := setupProvider(t)
 
-	got, err := mockProvider.Get(key)
-	if err != nil {
-		t.Fatalf("failed to get secret: %v", err)
-	}
-	if got != value {
-		t.Errorf("expected value %q, got %q", value, got)
-	}
+	const key = "foo/bar"
+	const value = "s3cr3t"
 
-	exists, err := mockProvider.Exists(key)
-	if err != nil {
-		t.Fatalf("failed to check existence: %v", err)
-	}
-	if !exists {
-		t.Error("expected secret to exist")
-	}
+	t.Run("Set", func(t *testing.T) {
+		if err := provider.Set(key, value); err != nil {
+			t.Fatalf("failed to set secret: %v", err)
+		}
+	})
 
-	if err = mockProvider.Destroy(key); err != nil {
-		t.Fatalf("failed to destroy secret: %v", err)
-	}
+	t.Run("Get", func(t *testing.T) {
+		got, err := provider.Get(key)
+		if err != nil {
+			t.Fatalf("failed to get secret: %v", err)
+		}
+		if got != value {
+			t.Errorf("expected value %q, got %q", value, got)
+		}
+	})
 
-	exists, _ = mockProvider.Exists(key)
-	if exists {
-		t.Error("expected secret to be deleted")
-	}
+	t.Run("Exists", func(t *testing.T) {
+		exists, err := provider.Exists(key)
+		if err != nil {
+			t.Fatalf("failed to check existence: %v", err)
+		}
+		if !exists {
+			t.Error("expected secret to exist")
+		}
+	})
+
+	t.Run("Destroy", func(t *testing.T) {
+		if err := provider.Destroy(key); err != nil {
+			t.Fatalf("failed to destroy secret: %v", err)
+		}
+
+		exists, err := provider.Exists(key)
+		if err != nil {
+			t.Fatalf("failed to check existence after destroy: %v", err)
+		}
+		if exists {
+			t.Error("expected secret to be deleted")
+		}
+
+		_, err = provider.Get(key)
+		if err == nil {
+			t.Error("expected error when getting deleted secret, got nil")
+		}
+	})
 }

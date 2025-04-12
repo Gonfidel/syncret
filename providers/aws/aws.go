@@ -12,7 +12,7 @@ import (
 	smTypes "github.com/aws/aws-sdk-go-v2/service/secretsmanager/types"
 )
 
-type Config struct {}
+type Config struct{}
 
 type Provider struct {
 	ProviderConfig Config
