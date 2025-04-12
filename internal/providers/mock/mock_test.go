@@ -3,7 +3,7 @@ package mock_test
 import (
 	"testing"
 
-	"github.com/gonfidel/syncret/providers/mock"
+	"github.com/gonfidel/syncret/internal/providers/mock"
 )
 
 func setupProvider(t *testing.T) *mock.Provider {

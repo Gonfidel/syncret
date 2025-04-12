@@ -3,16 +3,15 @@ package secret_test
 import (
 	"testing"
 
-	"github.com/gonfidel/syncret/providers/mock"
+	"github.com/gonfidel/syncret/internal/providers/mock"
 	"github.com/gonfidel/syncret/secret"
 )
 
 func TestSecretManager_SetGetDestroy(t *testing.T) {
-	mockProvider, err := mock.NewProvider(mock.Config{})
+	manager, err := secret.NewMockManager(mock.Config{})
 	if err != nil {
 		t.Fatalf("failed to generate new provider: %v", err)
 	}
-	manager := secret.NewManager(mockProvider)
 
 	key := "foo/bar"
 	value := "s3cr3t"

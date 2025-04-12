@@ -2,31 +2,40 @@ package mock
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 )
 
 type Config struct{}
 
 type Provider struct {
-	secrets map[string]string
-	mu      sync.RWMutex
-	config  Config
+	secrets        map[string]string
+	mu             sync.RWMutex
+	ProviderConfig Config
 }
 
 func NewProvider(c Config) (*Provider, error) {
-	p := Provider{
-		secrets: make(map[string]string),
-		config:  c,
+	p := &Provider{
+		ProviderConfig: c,
+		secrets:        make(map[string]string),
 	}
-	err := p.Setup()
-	if err != nil {
+
+	if err := p.Init(); err != nil {
 		return nil, err
 	}
 
-	return &p, nil
+	runtime.SetFinalizer(p, func(p *Provider) {
+		_ = p.Shutdown()
+	})
+
+	return p, nil
 }
 
-func (m *Provider) Setup() error {
+func (m *Provider) Init() error {
+	return nil
+}
+
+func (m *Provider) Shutdown() error {
 	return nil
 }
 

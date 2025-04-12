@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gonfidel/syncret/providers/local"
+	"github.com/gonfidel/syncret/internal/providers/local"
 )
 
 const (
