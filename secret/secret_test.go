@@ -9,6 +9,9 @@ import (
 
 func TestSecretManager_SetGetDestroy(t *testing.T) {
 	mockProvider, err := mock.NewProvider(mock.Config{})
+	if err != nil {
+		t.Fatalf("failed to generate new provider: %v", err)
+	}
 	manager := secret.NewSecretManager(mockProvider)
 
 	key := "foo/bar"

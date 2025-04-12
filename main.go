@@ -8,7 +8,7 @@ import (
 	// secret "github.com/gonfidel/syncret/secret"
 )
 
-func main(){
+func main() {
 	// TODO (ngeorge): Review if I can rmove the secrets manager object in favor of the
 	// provider. Feels redundant considering we can call the provider directly
 	awsProvider, err := aws.NewProvider(aws.Config{})
@@ -29,6 +29,9 @@ func main(){
 	fmt.Println(awsTest)
 
 	err = awsProvider.Destroy("sample/test/123")
+	if err != nil {
+		fmt.Printf("failed to destroy secret: %v\n", err)
+	}
 
 	exists, err := awsProvider.Exists("sample/test/123")
 	if err != nil {

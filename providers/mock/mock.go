@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-type Config struct {}
+type Config struct{}
 
 type MockProvider struct {
 	secrets map[string]string
@@ -20,7 +20,7 @@ func NewProvider(c Config) (*MockProvider, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &p, nil
 }
 

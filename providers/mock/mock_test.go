@@ -8,6 +8,9 @@ import (
 
 func TestMockProvider_SetGetDestroy(t *testing.T) {
 	mockProvider, err := mock.NewProvider(mock.Config{})
+	if err != nil {
+		t.Fatalf("failed to generate new provider: %v", err)
+	}
 
 	key := "foo/bar"
 	value := "s3cr3t"

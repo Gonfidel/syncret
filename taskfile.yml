@@ -1,0 +1,36 @@
+version: '3'
+
+tasks:
+  # Format code using gofmt
+  fmt:
+    desc: "Run gofmt to format Go code"
+    cmds:
+      - go fmt ./...
+
+  # Run go vet to check for suspicious constructs
+  vet:
+    desc: "Run go vet to check for suspicious constructs"
+    cmds:
+      - go vet ./...
+
+  # Run golangci-lint to check for code issues
+  lint:
+    desc: "Run golangci-lint to check for linting issues"
+    cmds:
+      - golangci-lint run ./...
+
+  # Run unit tests using go test
+  test:
+    desc: "Run unit tests"
+    cmds:
+      - go test ./...
+
+  # Build the application
+  build:
+    desc: "Build the application"
+    cmds:
+      - go build -o app .
+
+  # Clean up binary and build artifacts
+  clean:
+    desc:

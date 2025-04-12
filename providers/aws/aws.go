@@ -20,8 +20,8 @@ type Config struct {
 
 type AwsProvider struct {
 	ProviderConfig Config
-	awsConfig config.Config
-	smClient *secretsmanager.Client
+	awsConfig      config.Config
+	smClient       *secretsmanager.Client
 }
 
 func (p *AwsProvider) Get(key string) (string, error) {
@@ -66,7 +66,7 @@ func (p *AwsProvider) Set(key, value string) error {
 	}
 	if exists {
 		_, err := p.smClient.UpdateSecret(context.Background(), &secretsmanager.UpdateSecretInput{
-			SecretId: aws.String(key),
+			SecretId:     aws.String(key),
 			SecretString: aws.String(value),
 		})
 		if err != nil {
@@ -74,7 +74,7 @@ func (p *AwsProvider) Set(key, value string) error {
 		}
 	} else {
 		_, err := p.smClient.CreateSecret(context.Background(), &secretsmanager.CreateSecretInput{
-			Name: aws.String(key),
+			Name:         aws.String(key),
 			SecretString: aws.String(value),
 		})
 		if err != nil {
@@ -92,10 +92,13 @@ func (p *AwsProvider) Destroy(key string) error {
 	}
 
 	if exists {
-		p.smClient.DeleteSecret(context.Background(), &secretsmanager.DeleteSecretInput{
+		_, err := p.smClient.DeleteSecret(context.Background(), &secretsmanager.DeleteSecretInput{
 			ForceDeleteWithoutRecovery: aws.Bool(true),
-			SecretId: aws.String(key),
+			SecretId:                   aws.String(key),
 		})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

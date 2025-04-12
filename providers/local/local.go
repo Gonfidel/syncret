@@ -1,8 +1,8 @@
 package local
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
 	_ "modernc.org/sqlite"
 )
 
@@ -13,7 +13,7 @@ type Config struct {
 
 type LocalProvider struct {
 	ProviderConfig Config
-	db *sql.DB
+	db             *sql.DB
 }
 
 func (p *LocalProvider) Get(key string) (string, error) {
@@ -57,7 +57,7 @@ func (p *LocalProvider) Set(key, value string) error {
 	return nil
 }
 
-func (p LocalProvider) Destroy(key string) error {
+func (p *LocalProvider) Destroy(key string) error {
 	result, err := p.db.Exec(`DELETE FROM secrets WHERE key = ?;`, key)
 	if err != nil {
 		return err
@@ -75,11 +75,7 @@ func (p LocalProvider) Destroy(key string) error {
 	return nil
 }
 
-func (p LocalProvider) CloseDatabaseConnection() {
-	p.db.Close()
-}
-
-func (p *LocalProvider) Setup() error {
+func (p *LocalProvider) OpenDatabaseConnection() error {
 	path := p.ProviderConfig.SqlitePath
 	if path == "" {
 		path = "tmp/example.db"
@@ -87,11 +83,27 @@ func (p *LocalProvider) Setup() error {
 
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
-		return fmt.Errorf("Error writing to file %s: %w", path, err)
+		return fmt.Errorf("Error opening sqlite connection %s: %w", path, err)
 	}
 	p.db = db
+	return nil
+}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS secrets (
+func (p *LocalProvider) CloseDatabaseConnection() error {
+	err := p.db.Close()
+	if err != nil {
+		return fmt.Errorf("error closing sqlite connection %w", err)
+	}
+	return nil
+}
+
+func (p *LocalProvider) Setup() error {
+	err := p.OpenDatabaseConnection()
+	if err != nil {
+		return err
+	}
+
+	_, err = p.db.Exec(`CREATE TABLE IF NOT EXISTS secrets (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		key VARCHAR(64) UNIQUE NOT NULL,
 		value VARCHAR(64) NOT NULL

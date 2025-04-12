@@ -50,6 +50,9 @@ func TestLocalProvider_SetGetDestroy(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		provider.CloseDatabaseConnection()
+		err := provider.CloseDatabaseConnection()
+		if err != nil {
+			t.Errorf("failed closing local provider sqlite connection")
+		}
 	})
 }
