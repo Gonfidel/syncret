@@ -27,77 +27,15 @@ jobs:
           go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
           go install github.com/securego/gosec/v2/cmd/gosec@latest
 
-  lint:
-    runs-on: ubuntu-latest
-    needs: install-tools
-    if: github.event_name == 'pull_request' || github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Run gofmt, govet, and golangci-lint
+      - name: Run lint
         run: |
           go fmt ./...
           go vet ./...
           golangci-lint run ./...
 
-  lint-fix:
-    runs-on: ubuntu-latest
-    needs: install-tools
-    if: github.event_name == 'pull_request' || github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Run gofmt, govet, and golangci-lint with fix
-        run: |
-          go fmt ./...
-          go vet ./...
-          golangci-lint run ./... --fix
-
-  security:
-    runs-on: ubuntu-latest
-    needs: install-tools
-    if: github.event_name == 'pull_request' || github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
       - name: Run gosec for security analysis
         run: |
           gosec ./...
-
-  test:
-    runs-on: ubuntu-latest
-    needs: install-tools
-    if: github.event_name == 'pull_request' || github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GO_VERSION }}
 
       - name: Run unit tests
         run: |
