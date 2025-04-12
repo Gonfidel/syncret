@@ -12,11 +12,7 @@ import (
 	smTypes "github.com/aws/aws-sdk-go-v2/service/secretsmanager/types"
 )
 
-type Config struct {
-	// TODO (ngeorge): Add options for provider configuration
-	// AwsSecretKeyId string
-	// AwsSecretAccessKey string
-}
+type Config struct {}
 
 type Provider struct {
 	ProviderConfig Config

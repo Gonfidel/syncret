@@ -8,7 +8,6 @@ import (
 )
 
 type Config struct {
-	// TODO (ngeorge): Add options for provider configuration
 	SqlitePath string
 }
 

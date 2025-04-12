@@ -4,12 +4,6 @@ import (
 	p "github.com/gonfidel/syncret/providers"
 )
 
-// // TODO (ngeorge): Review if we can remove this struct export
-// type Secret struct {
-// 	Key string
-// 	Value string
-// }
-
 type Manager struct {
 	provider p.Provider
 }
