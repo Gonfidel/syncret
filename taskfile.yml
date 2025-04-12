@@ -31,3 +31,13 @@ tasks:
     desc: "Run unit tests"
     cmds:
       - go test -v ./...
+
+  publish:
+    desc: "Create a git tag, push it, and publish the Go module"
+    requires:
+      vars: ["TAG"]
+    cmds:
+      - echo "Tagging version {{.TAG}}"
+      - git tag {{.TAG}}
+      - git push origin {{.TAG}}
+      - GOPROXY=proxy.golang.org go list -m github.com/gonfidel/syncret@{{.TAG}}
